@@ -4,21 +4,30 @@ exports.handler = async function(event) {
   try {
     const apiKey = event.queryStringParameters.key;
     
+    // Clean the API key (remove any spaces, quotes, etc.)
+    const cleanApiKey = apiKey.trim().replace(/^["']|["']$/g, '');
+    
+    // Make sure Bearer is properly formatted
+    const authHeader = cleanApiKey.startsWith('Bearer ') 
+      ? cleanApiKey 
+      : `Bearer ${cleanApiKey}`;
+
+    console.log('Making request with auth header:', authHeader); // For debugging
+
     const response = await fetch('https://api.unify.ai/v0/credits', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
+        'Authorization': authHeader,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       }
     });
 
     const data = await response.json();
-    
-    // Log the response for debugging
-    console.log('API Response:', data);
+    console.log('API Response:', data); // For debugging
 
-    // If response is successful and has any data
-    if (response.ok && data) {
+    // If response is successful and has credits data
+    if (response.ok && data && (data.credits !== undefined)) {
       return {
         statusCode: 200,
         headers: {
@@ -26,8 +35,7 @@ exports.handler = async function(event) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          credits: data.credits || data.credit || 0,  // Try different possible field names
-          rawResponse: data  // Include raw response for debugging
+          credits: data.credits
         })
       };
     }
@@ -42,7 +50,8 @@ exports.handler = async function(event) {
       body: JSON.stringify({
         error: 'API Error',
         details: data,
-        status: response.status
+        status: response.status,
+        usedHeader: authHeader // For debugging
       })
     };
 
