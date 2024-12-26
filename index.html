@@ -212,7 +212,7 @@
 
                 if (data.error) {
                     resultDiv.style.display = 'block';
-                    resultDiv.innerHTML = `Error: ${data.error}<br>Details: ${JSON.stringify(data.details || {})}`;
+                    resultDiv.innerHTML = 'Invalid API key';  // Simplified error message
                     if (checkInterval) {
                         document.getElementById('liveToggle').checked = false;
                         toggleLiveCheck();
@@ -223,7 +223,7 @@
                 const credits = data.credits;
                 if (credits === undefined || credits === null) {
                     resultDiv.style.display = 'block';
-                    resultDiv.innerHTML = 'Unable to fetch credits. Raw response: ' + JSON.stringify(data);
+                    resultDiv.innerHTML = 'Invalid API key';  // Simplified error message
                     if (checkInterval) {
                         document.getElementById('liveToggle').checked = false;
                         toggleLiveCheck();
@@ -251,7 +251,7 @@
                 historyDiv.style.display = 'block';
             } catch (error) {
                 resultDiv.style.display = 'block';
-                resultDiv.innerHTML = 'Error checking credits: ' + error.message;
+                resultDiv.innerHTML = 'Invalid API key';  // Simplified error message
                 
                 if (checkInterval) {
                     document.getElementById('liveToggle').checked = false;
