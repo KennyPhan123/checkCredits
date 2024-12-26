@@ -2,11 +2,11 @@
 <html>
 <head>
     <title>Credits Checker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 50px auto;
+            margin: 0;
             padding: 20px;
             background-color: #1a1a1a;
             color: white;
@@ -20,7 +20,7 @@
             padding: 30px;
             border-radius: 20px;
             box-sizing: border-box;
-            width: 100%;
+            width: 90%;
             max-width: 600px;
             box-shadow: 
                 0 0 20px rgba(0,255,255,0.2),
@@ -168,13 +168,31 @@
             color: #fff;
             text-shadow: 0 0 10px rgba(0,255,255,0.3);
             margin-bottom: 30px;
+            font-size: 2em;
         }
-        a {
-            color: #4CAF50;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
+
+        /* Mobile Responsiveness */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                width: 100%;
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            input, button {
+                font-size: 16px;
+                padding: 15px;
+            }
+            button {
+                height: 60px;
+            }
+            #result {
+                font-size: 20px;
+            }
         }
     </style>
 </head>
