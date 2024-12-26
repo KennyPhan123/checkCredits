@@ -201,12 +201,28 @@
             
             try {
                 const response = await fetch(`/.netlify/functions/checkCredits?key=${apiKey}`);
-                
-                if (!response.ok) {
-                    throw new Error('Failed to check credits');
-                }
-                
                 const data = await response.json();
+                
+                if (data.error) {
+                    resultDiv.style.display = 'block';
+                    resultDiv.innerHTML = `Error: ${data.error}`;
+                    if (checkInterval) {
+                        document.getElementById('liveToggle').checked = false;
+                        toggleLiveCheck();
+                    }
+                    return;
+                }
+
+                if (data.credits === undefined) {
+                    resultDiv.style.display = 'block';
+                    resultDiv.innerHTML = 'Invalid API key or no credits information available';
+                    if (checkInterval) {
+                        document.getElementById('liveToggle').checked = false;
+                        toggleLiveCheck();
+                    }
+                    return;
+                }
+
                 resultDiv.style.display = 'block';
                 resultDiv.innerHTML = `Credits available: $${data.credits}`;
 
