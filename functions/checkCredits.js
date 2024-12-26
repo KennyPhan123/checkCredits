@@ -2,29 +2,29 @@ const fetch = require('node-fetch');
 
 exports.handler = async function(event) {
   try {
-    const apiKey = event.queryStringParameters.key;
+    let apiKey = event.queryStringParameters.key;
     
-    // Clean the API key (remove any spaces, quotes, etc.)
-    const cleanApiKey = apiKey.trim().replace(/^["']|["']$/g, '');
+    // Clean the API key and handle special characters
+    apiKey = decodeURIComponent(apiKey);
     
     // Make sure Bearer is properly formatted
-    const authHeader = cleanApiKey.startsWith('Bearer ') 
-      ? cleanApiKey 
-      : `Bearer ${cleanApiKey}`;
+    const authHeader = apiKey.startsWith('Bearer ') 
+      ? apiKey 
+      : `Bearer ${apiKey}`;
 
-    console.log('Making request with auth header:', authHeader); // For debugging
+    console.log('Making request...'); // For debugging
 
     const response = await fetch('https://api.unify.ai/v0/credits', {
       method: 'GET',
       headers: {
         'Authorization': authHeader,
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'User-Agent': 'Credits-Checker/1.0'
       }
     });
 
     const data = await response.json();
-    console.log('API Response:', data); // For debugging
 
     // If response is successful and has credits data
     if (response.ok && data && (data.credits !== undefined)) {
@@ -49,9 +49,7 @@ exports.handler = async function(event) {
       },
       body: JSON.stringify({
         error: 'API Error',
-        details: data,
-        status: response.status,
-        usedHeader: authHeader // For debugging
+        details: data
       })
     };
 

@@ -202,15 +202,13 @@
         let historyData = [];
 
         async function checkCredits() {
-            const apiKey = document.getElementById('apiKey').value;
+            const apiKey = encodeURIComponent(document.getElementById('apiKey').value.trim());
             const resultDiv = document.getElementById('result');
             const historyDiv = document.getElementById('history');
             
             try {
                 const response = await fetch(`/.netlify/functions/checkCredits?key=${apiKey}`);
                 const data = await response.json();
-                
-                console.log('Function Response:', data); // For debugging
 
                 if (data.error) {
                     resultDiv.style.display = 'block';
