@@ -13,33 +13,41 @@ exports.handler = async function(event) {
     });
 
     const data = await response.json();
+    
+    // Log the response for debugging
+    console.log('API Response:', data);
 
-    // Check if the response contains credits
-    if (data && data.credits !== undefined) {
+    // If response is successful and has any data
+    if (response.ok && data) {
       return {
         statusCode: 200,
         headers: {
           'Access-Control-Allow-Origin': '*',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(data)
-      };
-    } else {
-      // If credits is undefined but we got a response
-      return {
-        statusCode: 400,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          error: 'Invalid API key or no credits information available',
-          originalResponse: data 
+        body: JSON.stringify({
+          credits: data.credits || data.credit || 0,  // Try different possible field names
+          rawResponse: data  // Include raw response for debugging
         })
       };
     }
 
+    // If response indicates an error
+    return {
+      statusCode: response.status,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        error: 'API Error',
+        details: data,
+        status: response.status
+      })
+    };
+
   } catch (error) {
+    console.error('Function error:', error);
     return {
       statusCode: 500,
       headers: {

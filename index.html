@@ -169,6 +169,13 @@
             text-shadow: 0 0 10px rgba(0,255,255,0.3);
             margin-bottom: 30px;
         }
+        a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -203,9 +210,11 @@
                 const response = await fetch(`/.netlify/functions/checkCredits?key=${apiKey}`);
                 const data = await response.json();
                 
+                console.log('Function Response:', data); // For debugging
+
                 if (data.error) {
                     resultDiv.style.display = 'block';
-                    resultDiv.innerHTML = `Error: ${data.error}`;
+                    resultDiv.innerHTML = `Error: ${data.error}<br>Details: ${JSON.stringify(data.details || {})}`;
                     if (checkInterval) {
                         document.getElementById('liveToggle').checked = false;
                         toggleLiveCheck();
@@ -213,9 +222,10 @@
                     return;
                 }
 
-                if (data.credits === undefined) {
+                const credits = data.credits;
+                if (credits === undefined || credits === null) {
                     resultDiv.style.display = 'block';
-                    resultDiv.innerHTML = 'Invalid API key or no credits information available';
+                    resultDiv.innerHTML = 'Unable to fetch credits. Raw response: ' + JSON.stringify(data);
                     if (checkInterval) {
                         document.getElementById('liveToggle').checked = false;
                         toggleLiveCheck();
@@ -224,26 +234,26 @@
                 }
 
                 resultDiv.style.display = 'block';
-                resultDiv.innerHTML = `Credits available: $${data.credits}`;
+                resultDiv.innerHTML = `Credits available: $${credits}`;
 
                 // Check for changes and update history
-                if (lastCredits !== null && lastCredits !== data.credits) {
-                    const difference = data.credits - lastCredits;
+                if (lastCredits !== null && lastCredits !== credits) {
+                    const difference = credits - lastCredits;
                     const timestamp = new Date().toLocaleTimeString();
                     const historyItem = {
                         time: timestamp,
                         difference: difference,
-                        newBalance: data.credits
+                        newBalance: credits
                     };
                     historyData.unshift(historyItem);
                     updateHistory();
                 }
 
-                lastCredits = data.credits;
+                lastCredits = credits;
                 historyDiv.style.display = 'block';
             } catch (error) {
                 resultDiv.style.display = 'block';
-                resultDiv.innerHTML = 'Error checking credits. Please verify your API key.';
+                resultDiv.innerHTML = 'Error checking credits: ' + error.message;
                 
                 if (checkInterval) {
                     document.getElementById('liveToggle').checked = false;
