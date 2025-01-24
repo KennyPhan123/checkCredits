@@ -3,5 +3,11 @@
   "version": "1.0.0",
   "dependencies": {
     "node-fetch": "^2.6.1"
+  },
+  "scripts": {
+    "build": "netlify-lambda build functions"
+  },
+  "devDependencies": {
+    "netlify-lambda": "^2.0.15"
   }
 }
