@@ -412,26 +412,64 @@
             `).join('');
         }
 
-        // Updated toggleLiveCheck function
+        function validateKeyInput() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const resultDiv = document.getElementById('result');
+            
+            // Check if there's no key or if no previous successful check
+            if (!apiKey || resultDiv.style.display !== 'block') {
+                document.getElementById('liveToggle').checked = false;
+                alert('Please enter and check an API key first.');
+                return false;
+            }
+            return true;
+        }
+
         function toggleLiveCheck() {
             const isChecked = document.getElementById('liveToggle').checked;
             const apiKey = document.getElementById('apiKey').value.trim();
             
             if (isChecked) {
-                // Only start live checking if there's a result already displayed
-                const resultDiv = document.getElementById('result');
-                if (resultDiv.style.display === 'block') {
-                    checkInterval = setInterval(checkCredits, 5000);
-                } else {
-                    // If no result displayed, uncheck the toggle
-                    document.getElementById('liveToggle').checked = false;
-                    alert('Please check credits manually first before enabling live checking.');
+                // Validate before starting live check
+                if (!validateKeyInput()) {
+                    return;
                 }
+                
+                // Store the current key for comparison
+                const initialKey = apiKey;
+                
+                // Modified interval function that checks for key changes
+                checkInterval = setInterval(() => {
+                    const currentKey = document.getElementById('apiKey').value.trim();
+                    
+                    // If key is deleted or changed, stop live checking
+                    if (!currentKey || currentKey !== initialKey) {
+                        document.getElementById('liveToggle').checked = false;
+                        clearInterval(checkInterval);
+                        checkInterval = null;
+                        alert('Live checking stopped: Please enter and check an API key first.');
+                        return;
+                    }
+                    
+                    // Only proceed with check if key is still valid
+                    checkCredits();
+                }, 5000);
             } else {
                 clearInterval(checkInterval);
                 checkInterval = null;
             }
         }
+
+        // Add event listener to the API key input
+        document.getElementById('apiKey').addEventListener('input', function() {
+            // If the input changes and live checking is on, validate
+            if (checkInterval) {
+                if (!validateKeyInput()) {
+                    clearInterval(checkInterval);
+                    checkInterval = null;
+                }
+            }
+        });
 
         // Initialize the display of stored keys
         displayStoredKeys();
