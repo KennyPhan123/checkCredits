@@ -12,19 +12,27 @@ exports.handler = async function(event) {
       ? apiKey 
       : `Bearer ${apiKey}`;
 
+    console.log('Making request with auth:', authHeader); // Debug log
+
     const response = await fetch('https://api.unify.ai/v0/credits', {
       method: 'GET',
       headers: {
         'Authorization': authHeader,
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'User-Agent': 'Credits-Checker/1.0'
       }
     });
 
     const data = await response.json();
+    console.log('API Response:', data); // Debug log
 
-    // If response is successful and has credits data
-    if (response.ok && data && (data.credits !== undefined)) {
+    // Log the full response for debugging
+    console.log('Response status:', response.status);
+    console.log('Response data:', data);
+
+    // If we get any kind of response with credits, consider it successful
+    if (data && data.credits !== undefined) {
       return {
         statusCode: 200,
         headers: {
@@ -37,16 +45,19 @@ exports.handler = async function(event) {
       };
     }
 
-    // If response indicates an error
+    // If we get here, something went wrong
     return {
-      statusCode: response.status,
+      statusCode: 400,
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        error: 'API Error',
-        details: data
+        error: true,
+        debug: {
+          status: response.status,
+          data: data
+        }
       })
     };
 
@@ -59,8 +70,11 @@ exports.handler = async function(event) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ 
-        error: 'Failed to check credits', 
-        message: error.message 
+        error: true,
+        debug: {
+          message: error.message,
+          stack: error.stack
+        }
       })
     };
   }
