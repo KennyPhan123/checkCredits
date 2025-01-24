@@ -323,15 +323,14 @@
             alert('Keys copied to clipboard!');
         }
 
-        // Modified checkCredits function
+        // Updated checkCredits function
         async function checkCredits() {
             const apiKey = document.getElementById('apiKey').value.trim();
-            const encodedKey = encodeURIComponent(apiKey);
             const resultDiv = document.getElementById('result');
             const historyDiv = document.getElementById('history');
             
             try {
-                const response = await fetch(`/.netlify/functions/checkCredits?key=${encodedKey}`);
+                const response = await fetch(`/.netlify/functions/checkCredits?key=${encodeURIComponent(apiKey)}`);
                 const data = await response.json();
     
                 if (data.error) {
@@ -377,6 +376,7 @@
                 lastCredits = credits;
                 historyDiv.style.display = 'block';
             } catch (error) {
+                console.error('Error:', error); // Add this for debugging
                 resultDiv.style.display = 'block';
                 resultDiv.innerHTML = 'Invalid API key';
                 
