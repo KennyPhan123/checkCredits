@@ -412,11 +412,21 @@
             `).join('');
         }
 
+        // Updated toggleLiveCheck function
         function toggleLiveCheck() {
             const isChecked = document.getElementById('liveToggle').checked;
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
             if (isChecked) {
-                checkCredits(); // Initial check
-                checkInterval = setInterval(checkCredits, 5000);
+                // Only start live checking if there's a result already displayed
+                const resultDiv = document.getElementById('result');
+                if (resultDiv.style.display === 'block') {
+                    checkInterval = setInterval(checkCredits, 5000);
+                } else {
+                    // If no result displayed, uncheck the toggle
+                    document.getElementById('liveToggle').checked = false;
+                    alert('Please check credits manually first before enabling live checking.');
+                }
             } else {
                 clearInterval(checkInterval);
                 checkInterval = null;
