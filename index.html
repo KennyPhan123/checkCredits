@@ -412,26 +412,16 @@
             `).join('');
         }
 
-        function validateKeyInput() {
-            const apiKey = document.getElementById('apiKey').value.trim();
-            const resultDiv = document.getElementById('result');
-            
-            // Check if there's no key or if no previous successful check
-            if (!apiKey || resultDiv.style.display !== 'block') {
-                document.getElementById('liveToggle').checked = false;
-                alert('Please enter and check an API key first.');
-                return false;
-            }
-            return true;
-        }
-
+        // Updated toggleLiveCheck function
         function toggleLiveCheck() {
             const isChecked = document.getElementById('liveToggle').checked;
             const apiKey = document.getElementById('apiKey').value.trim();
+            const resultDiv = document.getElementById('result');
             
             if (isChecked) {
-                // Validate before starting live check
-                if (!validateKeyInput()) {
+                // Only allow live checking if there's a key and previous successful check
+                if (!apiKey || resultDiv.style.display !== 'block') {
+                    document.getElementById('liveToggle').checked = false;
                     return;
                 }
                 
@@ -442,12 +432,13 @@
                 checkInterval = setInterval(() => {
                     const currentKey = document.getElementById('apiKey').value.trim();
                     
-                    // If key is deleted or changed, stop live checking
+                    // If key is deleted or changed, stop live checking and reset display
                     if (!currentKey || currentKey !== initialKey) {
                         document.getElementById('liveToggle').checked = false;
                         clearInterval(checkInterval);
                         checkInterval = null;
-                        alert('Live checking stopped: Please enter and check an API key first.');
+                        resultDiv.style.display = 'none';
+                        document.getElementById('history').style.display = 'none';
                         return;
                     }
                     
@@ -462,12 +453,14 @@
 
         // Add event listener to the API key input
         document.getElementById('apiKey').addEventListener('input', function() {
-            // If the input changes and live checking is on, validate
+            const resultDiv = document.getElementById('result');
+            // If the input changes, reset everything
             if (checkInterval) {
-                if (!validateKeyInput()) {
-                    clearInterval(checkInterval);
-                    checkInterval = null;
-                }
+                document.getElementById('liveToggle').checked = false;
+                clearInterval(checkInterval);
+                checkInterval = null;
+                resultDiv.style.display = 'none';
+                document.getElementById('history').style.display = 'none';
             }
         });
 
