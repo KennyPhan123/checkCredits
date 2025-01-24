@@ -267,7 +267,7 @@
         let lastCredits = null;
         let checkInterval = null;
         let historyData = [];
-        let currentKey = null; // Added this line as instructed
+        let currentKey = null;
 
         // Initialize stored keys from localStorage
         let storedKeys = JSON.parse(localStorage.getItem('apiKeys')) || [];
@@ -324,12 +324,19 @@
             alert('Keys copied to clipboard!');
         }
 
-        // Updated checkCredits function
         async function checkCredits() {
             const apiKey = document.getElementById('apiKey').value.trim();
             const resultDiv = document.getElementById('result');
             const historyDiv = document.getElementById('history');
             
+            // If key changed, reset history
+            if (currentKey !== apiKey) {
+                lastCredits = null;
+                historyData = [];
+                currentKey = apiKey;
+                historyDiv.style.display = 'none';
+            }
+
             try {
                 const response = await fetch(`/.netlify/functions/checkCredits?key=${encodeURIComponent(apiKey)}`);
                 const data = await response.json();
@@ -355,35 +362,29 @@
                     return;
                 }
 
-                // If we got here, the key is valid, so save it
-                saveKey(apiKey);
+                // Only save key if manually checked (not from live checking)
+                if (!checkInterval) {
+                    saveKey(apiKey);
+                }
 
                 resultDiv.style.display = 'block';
                 resultDiv.innerHTML = `Credits available: $${credits}`;
 
-                // Only update history if live checking is on and there's a change
-                if (document.getElementById('liveToggle').checked) {
-                    if (lastCredits !== null && lastCredits !== credits) {
-                        const difference = credits - lastCredits;
-                        const timestamp = new Date().toLocaleTimeString();
-                        const historyItem = {
-                            time: timestamp,
-                            difference: difference,
-                            newBalance: credits
-                        };
-                        historyData.unshift(historyItem);
-                        updateHistory();
-                    }
-                } else {
-                    // If not live checking, reset history when checking a new key
-                    lastCredits = null;
-                    historyData = [];
-                    historyDiv.style.display = 'none';
+                // Update history if credits changed
+                if (lastCredits !== null && lastCredits !== credits) {
+                    const difference = credits - lastCredits;
+                    const timestamp = new Date().toLocaleTimeString();
+                    const historyItem = {
+                        time: timestamp,
+                        difference: difference,
+                        newBalance: credits
+                    };
+                    historyData.unshift(historyItem);
+                    updateHistory();
                 }
 
-                // Update lastCredits only if live checking is on
-                if (document.getElementById('liveToggle').checked) {
-                    lastCredits = credits;
+                lastCredits = credits;
+                if (historyData.length > 0) {
                     historyDiv.style.display = 'block';
                 }
 
@@ -411,19 +412,10 @@
             `).join('');
         }
 
-        // Updated toggleLiveCheck function
         function toggleLiveCheck() {
             const isChecked = document.getElementById('liveToggle').checked;
-            const apiKey = document.getElementById('apiKey').value.trim();
-            
             if (isChecked) {
-                if (currentKey !== apiKey) {
-                    // Reset history when switching to a new key
-                    lastCredits = null;
-                    historyData = [];
-                    document.getElementById('history').style.display = 'none';
-                    currentKey = apiKey;
-                }
+                checkCredits(); // Initial check
                 checkInterval = setInterval(checkCredits, 5000);
             } else {
                 clearInterval(checkInterval);
