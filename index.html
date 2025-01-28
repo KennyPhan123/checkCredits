@@ -170,8 +170,7 @@
             margin-bottom: 30px;
             font-size: 2em;
         }
-
-        /* New styles added */
+        /* New and updated styles */
         .keys-container {
             margin-top: 20px;
             padding: 20px;
@@ -187,6 +186,23 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .key-item:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+        .key-content {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-right: 10px;
+        }
+        .key-text {
+            word-break: break-all;
+            display: inline;
         }
         .key-item button {
             width: auto;
@@ -194,6 +210,8 @@
             padding: 5px 10px;
             margin: 0 5px;
             font-size: 14px;
+            min-width: 60px;
+            flex-shrink: 0;
         }
         .export-section {
             margin-top: 20px;
@@ -260,7 +278,6 @@
                 <button onclick="exportKeys()" class="export-button">Export Keys</button>
             </div>
         </div>
-
     </div>
 
     <script>
@@ -272,7 +289,6 @@
         // Initialize stored keys from localStorage
         let storedKeys = JSON.parse(localStorage.getItem('apiKeys')) || [];
 
-        // Function to save a new key
         function saveKey(key) {
             const existingKey = storedKeys.find(k => k.key === key);
             if (!existingKey) {
@@ -285,35 +301,43 @@
             }
         }
 
-        // Function to delete a key
         function deleteKey(key) {
             storedKeys = storedKeys.filter(k => k.key !== key);
             localStorage.setItem('apiKeys', JSON.stringify(storedKeys));
             displayStoredKeys();
         }
 
-        // Function to display stored keys
+        function useStoredKey(event, key) {
+            // Ignore if clicking the delete button
+            if (event.target.tagName === 'BUTTON') return;
+            
+            // Set the key in the input field
+            const apiKeyInput = document.getElementById('apiKey');
+            apiKeyInput.value = key;
+            
+            // Trigger the check
+            checkCredits();
+        }
+
         function displayStoredKeys() {
             const keysDiv = document.getElementById('savedKeys');
             keysDiv.innerHTML = storedKeys.map(item => `
-                <div class="key-item">
-                    <div>
-                        ${item.key}
+                <div class="key-item" onclick="useStoredKey(event, '${item.key}')">
+                    <div class="key-content">
+                        <span class="key-text">${item.key}</span>
                         <span class="date-added">${new Date(item.dateAdded).toLocaleDateString()}</span>
                     </div>
-                    <button onclick="deleteKey('${item.key}')">Delete</button>
+                    <button onclick="deleteKey('${item.key}'); event.stopPropagation();">Delete</button>
                 </div>
             `).join('');
         }
 
-        // Function to export keys
         function exportKeys() {
             const keysObject = {
                 keys: storedKeys.map(k => k.key)
             };
             const jsonString = JSON.stringify(keysObject, null, 4);
             
-            // Create a temporary textarea to copy the text
             const textarea = document.createElement('textarea');
             textarea.value = jsonString;
             document.body.appendChild(textarea);
@@ -329,7 +353,6 @@
             const resultDiv = document.getElementById('result');
             const historyDiv = document.getElementById('history');
             
-            // If key changed, reset history
             if (currentKey !== apiKey) {
                 lastCredits = null;
                 historyData = [];
@@ -362,7 +385,6 @@
                     return;
                 }
 
-                // Only save key if manually checked (not from live checking)
                 if (!checkInterval) {
                     saveKey(apiKey);
                 }
@@ -370,7 +392,6 @@
                 resultDiv.style.display = 'block';
                 resultDiv.innerHTML = `Credits available: $${credits}`;
 
-                // Update history if credits changed
                 if (lastCredits !== null && lastCredits !== credits) {
                     const difference = credits - lastCredits;
                     const timestamp = new Date().toLocaleTimeString();
@@ -412,27 +433,22 @@
             `).join('');
         }
 
-        // Updated toggleLiveCheck function
         function toggleLiveCheck() {
             const isChecked = document.getElementById('liveToggle').checked;
             const apiKey = document.getElementById('apiKey').value.trim();
             const resultDiv = document.getElementById('result');
             
             if (isChecked) {
-                // Only allow live checking if there's a key and previous successful check
                 if (!apiKey || resultDiv.style.display !== 'block') {
                     document.getElementById('liveToggle').checked = false;
                     return;
                 }
                 
-                // Store the current key for comparison
                 const initialKey = apiKey;
                 
-                // Modified interval function that checks for key changes
                 checkInterval = setInterval(() => {
                     const currentKey = document.getElementById('apiKey').value.trim();
                     
-                    // If key is deleted or changed, stop live checking and reset display
                     if (!currentKey || currentKey !== initialKey) {
                         document.getElementById('liveToggle').checked = false;
                         clearInterval(checkInterval);
@@ -442,7 +458,6 @@
                         return;
                     }
                     
-                    // Only proceed with check if key is still valid
                     checkCredits();
                 }, 5000);
             } else {
@@ -451,10 +466,8 @@
             }
         }
 
-        // Add event listener to the API key input
         document.getElementById('apiKey').addEventListener('input', function() {
             const resultDiv = document.getElementById('result');
-            // If the input changes, reset everything
             if (checkInterval) {
                 document.getElementById('liveToggle').checked = false;
                 clearInterval(checkInterval);
@@ -464,7 +477,6 @@
             }
         });
 
-        // Initialize the display of stored keys
         displayStoredKeys();
     </script>
 </body>
